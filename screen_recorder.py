@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import cv2
 from mss import mss
@@ -18,8 +19,9 @@ resolution = (VIDEO_WIDTH, VIDEO_HEIGHT)
 # MP4 codec
 codec = cv2.VideoWriter_fourcc(*'MP4V')
 
-# Filename
-filename = './Test Data/recording.mp4'
+# Timestamped filename
+timestamp = time.strftime('%Y%m%d-%H%M%S')
+filename = './Test Data/{}.mp4'.format(timestamp)
 
 # TODO: Figure out how to output a video that is accurate wrt time
 # FPS
