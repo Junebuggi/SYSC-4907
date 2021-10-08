@@ -1,12 +1,19 @@
 import time
 import numpy as np
 import cv2
+import pygetwindow as gw
+import sys
 from mss import mss
 from PIL import Image
 
-# Tweak these for your environment
+# Maximize and bring SeekOFix window to the foreground
+seekOFixWindow = gw.getWindowsWithTitle('SeekOFix')[0]
+seekOFixWindow.maximize()
+seekOFixWindow.activate()
+
+# These depend on host resolution
 X_OFFSET = 17
-Y_OFFSET = 66
+Y_OFFSET = 64
 VIDEO_WIDTH = 620
 VIDEO_HEIGHT = 470
 
@@ -21,7 +28,7 @@ codec = cv2.VideoWriter_fourcc(*'MP4V')
 
 # Timestamped filename
 timestamp = time.strftime('%Y%m%d-%H%M%S')
-filename = './Test Data/{}.mp4'.format(timestamp)
+filename = './Juptyer Test Notebooks/Test Data/{}.mp4'.format(timestamp)
 
 # TODO: Figure out how to output a video that is accurate wrt time
 # FPS
