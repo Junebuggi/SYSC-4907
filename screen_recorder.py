@@ -1,8 +1,7 @@
-import time
+import pygetwindow as gw
 import numpy as np
 import cv2
-import pygetwindow as gw
-import sys
+import time
 from mss import mss
 from PIL import Image
 
@@ -27,21 +26,28 @@ resolution = (VIDEO_WIDTH, VIDEO_HEIGHT)
 codec = cv2.VideoWriter_fourcc(*'MP4V')
 
 # Timestamped filename
-timestamp = time.strftime('%Y%m%d-%H%M%S')
-filename = './Juptyer Test Notebooks/Test Data/{}.mp4'.format(timestamp)
+timestamp = time.strftime('%Y.%m.%d-%H.%M.%S')
+filename = '{}.mp4'.format(timestamp)
+testDataFolder = './Test Data'
+videoPath = '{}/{}'.format(testDataFolder, filename)
 
-# TODO: Figure out how to output a video that is accurate wrt time
-# FPS
-fps = 30.0
+# Limit image grab rate based on VideoWriter fps
+fps = 10.0
+counterLimit = (30 / fps)
 
 # Create VideoWriter object
-out = cv2.VideoWriter(filename, codec, fps, resolution)
+out = cv2.VideoWriter(videoPath, codec, fps, resolution)
 
 # Create empty window
 cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
 
 # Resize this window
 cv2.resizeWindow('Live', 480, 270)
+
+# Record number of frames and duration to calculate true FPS
+numFrames = 0
+startTime = time.time()
+counter = 0
 
 with mss() as sct:
     while True:
@@ -57,14 +63,26 @@ with mss() as sct:
         # Convert from BGR to RGB
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # TODO: Consider writing to output after X amount of frames to
-        # reduce file size and then lower FPS
-        out.write(frame)
+        counter += 1
 
-        # Display the recording screen
-        cv2.imshow('Live', frame)
+        # Write an image to the video every X captures
+        if counter >= counterLimit:
+            counter = 0
+            out.write(frame)
+            numFrames += 1
+
+            # Display the recording screen
+            cv2.imshow('Live', frame)
 
         if (cv2.waitKey(1) & 0xFF) == ord('q'):
+
+            # Print capture duration and true FPS
+            endTime = time.time()
+            duration = endTime - startTime
+            trueFps = np.ceil(numFrames / duration)
+            print('Duration: {}'.format(duration))
+            print('True FPS: {}'.format(trueFps))
+
             # Release the Video writer
             out.release()
 
