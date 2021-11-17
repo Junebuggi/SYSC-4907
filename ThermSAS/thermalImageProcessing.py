@@ -5,10 +5,9 @@ import sys
 from colormap import rgb2hex
 from matplotlib import pyplot as plt
 import time
-import ThermSAS.thermalMap as ThermalMap
+import thermalMap as ThermalMap
 import math
 import random as rng
-from scipy.signal import argrelextrema
 from operator import itemgetter
 
 thermalObj = ThermalMap.ThermalMap()
@@ -73,7 +72,7 @@ def getContourHeat(contours, img, frame):
         contourFeatures.append((avgTemp, len(pts)))
     return contourFeatures
 
-    def getAverageImageTemperature(image):
+def getAverageImageTemperature(image):
     height, width, channels = image.shape
     sum = 0
     for x in range(0, width-1):
@@ -84,7 +83,7 @@ def getContourHeat(contours, img, frame):
 
     return sum / (height*width)
 
-    def contourMask(image):
+def contourMask(image):
     pts = np.where(image != 0)
     #print(len(pts[0]))
     coordinates = []
@@ -92,7 +91,7 @@ def getContourHeat(contours, img, frame):
         coordinates.append((pts[0][i], pts[1][i]))
     return coordinates
 
-    def getPercentageOfMode(image):
+def getPercentageOfMode(image):
     height, width, channels = image.shape
     sum = 0
     temps = []
@@ -105,7 +104,7 @@ def getContourHeat(contours, img, frame):
     sum = np.sum(counts)
     return (np.amax(counts)/sum)
 
-    def thresh_callback(frame, image):
+def thresh_callback(frame, image):
     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contour_sizes = [(cv2.contourArea(contour), contour) for contour in contours]
     biggest_contour = max(contour_sizes, key=lambda x: x[0])[1]
@@ -124,13 +123,18 @@ def getContourHeat(contours, img, frame):
             cv2.ellipse(blackFrame, minEllipse, color, -1)
     return blackFrame
 
-    def getAverageTemperature_pnts(pnts, image):
+def getAverageTemperature_pnts(pnts, image):
     sum = 0
     for x in pnts:
         rgb = (int(image[x][0]), int(image[x][1]), int(image[x][2]))
         sum += int(thermalObj.get_temp(rgb))
 
     return sum/len(pnts)
+
+def removeNoise(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blur = cv2.bilateralFilter(gray,9,75,75)
+    return blur
 
 def getContoursInsidePan(image, frame):
     contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_L1)
@@ -140,11 +144,12 @@ def getContoursInsidePan(image, frame):
     
     return image_cpy, contours
 
-def thermalImagingProcess_toTable(frames, tableName):
+def thermalImagingProcess_toTable(frames):
     #Iterate over every sampled frame in video
     backgroundTemp = 24
     background = resizeImage(frames[0], 25)
     prevIsBG = True
+    entries = []
     i=0
     for frame in frames:
         #Resize and crop image to improve image processing speed
@@ -190,13 +195,18 @@ def thermalImagingProcess_toTable(frames, tableName):
                             pan = (panAvg, pan[1] - f[1])
                         foodTemp = [x[0] for x in food]
                         foodSize = [x[1] for x in food]
-                        commitToTable(tableName, [i*10, pan[0], pan[1], len(food), str(foodTemp),str(foodSize)])
+                        entries.append([i*10, pan[0], pan[1], len(food), str(foodTemp),str(foodSize)])
                     else:
-                        commitToTable(tableName, [i*10, pan[0], pan[1], len(food), "", ""])
+                        entries.append([i*10, pan[0], pan[1], len(food), "", ""])
         i += 1
+    return entries
                     
-
-def processVideo(video, tableName, sampleRate):
+"""
+This function will sample a thermal video with a rate of sampleRate
+and will add the data derived for each frame to the table
+"""
+def processVideo(video, sampleRate):
     frames = sampleVideo(video, sampleRate)
-    thermalImagingProcess_toTable(frames, tableName)
+    entries = thermalImagingProcess_toTable(frames)
+    return entries
 
