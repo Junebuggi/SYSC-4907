@@ -195,9 +195,9 @@ def thermalImagingProcess_toTable(frames):
                             pan = (panAvg, pan[1] - f[1])
                         foodTemp = [x[0] for x in food]
                         foodSize = [x[1] for x in food]
-                        entries.append(([i*10, pan[0], pan[1], len(food), str(foodTemp),str(foodSize)]))
+                        entries.append((i*10, pan[0], pan[1], len(food), str(foodTemp),str(foodSize)))
                     else:
-                        entries.append(([i*10, pan[0], pan[1], len(food), "", ""]))
+                        entries.append((i*10, pan[0], pan[1], len(food), "", ""))
         i += 1
     return entries
                     
