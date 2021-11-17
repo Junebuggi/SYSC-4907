@@ -48,9 +48,11 @@ def generate_database():
 
         # Add frame data to the analysis table
         frameData = processVideo(filename, 10)
-        # insert_many_frame_data(frameData, analysisTableName)
+        frameDataObjs = []
+        for (timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea) in frameData:
+            frameDataObjs.append(FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea))
 
-        print(frameData)
+        insert_many_frame_data(frameDataObjs, analysisTableName)
 
         # Add a record to the videos master table
         video = Video(type, subtype, filename, analysisTableName)

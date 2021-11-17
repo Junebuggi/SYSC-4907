@@ -185,6 +185,8 @@ def thermalImagingProcess(frames):
                     pts = getContourHeat(contours, thresh, frame)
                     pts = list(filter(lambda x: x[1] > 50, pts))
                     pan = max(pts,key=lambda item:item[1])
+
+                    food = []
                     if(len(pts) > 1):
                         food = pts.copy()
                         food.remove(pan)
@@ -206,7 +208,6 @@ and will add the data derived for each frame to the table
 """
 def processVideo(video, sampleRate):
     frames = sampleVideo(video, sampleRate)
-    print(frames)
     entries = thermalImagingProcess(frames)
     return entries
 
