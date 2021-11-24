@@ -21,9 +21,6 @@ def generate_database():
         print('Removing existing database {}'.format(DATABASE))
         os.remove(DATABASE)
 
-    # Create videos master table
-    create_videos_table()
-
     # Get all filenames of thermal videos in Test Data folder
     TEST_DATA_FOLDER = 'Test Data'
     PATTERN = '*.mp4'
@@ -36,27 +33,7 @@ def generate_database():
 
     # Iterate through each video
     for filename in filenames:
-
-        # Get the type of the video (e.g., Frying)
-        type = filename.split('\\')[1]
-
-        # Get the subtype of the video (e.g., Chicken)
-        subtype = filename[filename.find('[')+1:filename.find(']')]
-
-        # Create an analysis table whose name is based on the subtype
-        analysisTableName = create_analysis_table(subtype)
-
-        # Add frame data to the analysis table
-        frameData = processVideo(filename, 10)
-        frameDataObjs = []
-        for (timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea) in frameData:
-            frameDataObjs.append(FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea))
-
-        insert_many_frame_data(frameDataObjs, analysisTableName)
-
-        # Add a record to the videos master table
-        video = Video(type, subtype, filename, analysisTableName)
-        insert_video(video)
+        add_video_from_filename(filename)
 
 def create_videos_table():
     conn = sqlite3.connect(DATABASE)
@@ -76,11 +53,15 @@ def create_videos_table():
     conn.close()
 
 def insert_video(video):
+    # Create videos table if it does not already exist
+    create_videos_table()
+
     conn = sqlite3.connect(DATABASE)
     with conn:
         c = conn.cursor()
         try:
             c.execute('INSERT INTO videos VALUES (null, ?, ?, ?, ?)', video.get_as_record())
+            print('Successfully inserted video {}'.format(video.filename))
         except AttributeError:
             print('Video to be inserted is not of type Video: {}'.format(type(video)))
         except:
@@ -209,6 +190,37 @@ def get_all_frame_data(analysisTableName):
     c.close()
     conn.close()
     return frameData
+
+def add_video_from_filename(filename):
+    ''' Adds the analytical data of a video to the database.
+    The provided filename must contain the 'Test Data' folder as part of its path.
+    '''
+    # Replace '\\' with '/' to handle incoming filenames
+    filename = filename.replace('\\', '/')
+
+    # Trim leading path up until the Test Data folder
+    filename = filename[filename.find('Test Data'):]
+
+    # Get the type of the video (e.g., Frying)
+    type = filename.split('/')[1]
+
+    # Get the subtype of the video (e.g., Chicken)
+    subtype = filename[filename.find('[')+1:filename.find(']')]
+
+    # Create an analysis table whose name is based on the subtype
+    analysisTableName = create_analysis_table(subtype)
+
+    # Add frame data to the analysis table
+    frameData = processVideo(filename, 10)
+    frameDataObjs = []
+    for (timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea) in frameData:
+        frameDataObjs.append(FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea))
+
+    insert_many_frame_data(frameDataObjs, analysisTableName)
+
+    # Add a record to the videos master table
+    video = Video(type, subtype, filename, analysisTableName)
+    insert_video(video)
 
 # Example
 if __name__ == '__main__':
