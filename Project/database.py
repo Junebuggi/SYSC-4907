@@ -5,6 +5,7 @@ from sqlite3 import IntegrityError
 from Models.video import Video
 from Models.frame_data import FrameData
 from thermalImageProcessing import processVideo
+from classifier import classifyStaticVideo
 
 DATABASE = 'Project/test.db'
 
@@ -224,20 +225,10 @@ def add_video_from_filename(filename):
 
 # Example
 if __name__ == '__main__':
-    generate_database()
-    for video in get_all_videos():
-        print(video)
+    frameData = get_all_frame_data('Steak_Analysis_Table_1')
+    result = classifyStaticVideo(frameData)
+    print(result)
 
-    # create_videos_table()
-    # create_analysis_table('AnalysisTable1')
-    # create_analysis_table('AnalysisTable2')
-    # video1 = Video('Frying', 'Chicken', 'filename', 'AnalysisTable1')
-    # video2 = Video('Frying', 'Steak', 'filename', 'AnalysisTable2')
-    # insert_video(video1)
-    # insert_video(video2)
-    # fd1 = FrameData(10, 30, 40, 2, 'foodtemp', 'foodarea')
-    # fd2 = FrameData(20, 10, 5, 3, 'foodtemp2', 'foodarea2')
-    # fd = [fd1, fd2]
-    # insert_many_frame_data(fd, 'AnalysisTable1')
-    # print(get_all_videos())
-    # print(get_all_frame_data('AnalysisTable1'))
+    # generate_database()
+    # for video in get_all_videos():
+    #     print(video)
