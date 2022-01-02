@@ -225,7 +225,7 @@ def add_video_from_filename(filename):
 
 # Example
 if __name__ == '__main__':
-    frameData = get_all_frame_data('Udon_Analysis_Table_1')
+    frameData = get_all_frame_data('Burger_Analysis_Table_2')
     result = classifyStaticVideo(frameData)
     print(result)
 

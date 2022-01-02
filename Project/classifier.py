@@ -28,21 +28,17 @@ def classifyStaticVideo(frameData):
             foodTempList = [float(foodTempElement.strip()) for foodTempElement in foodTempList]
 
             # Classify cooking method based on temperature difference between pan and food
-            if average(foodTempList) < panTemp - 50 or any(foodTempList) > panTemp:
+            if panTemp > 200 or any(foodTempList) > panTemp or average(foodTempList) < panTemp - 50:
                 classifications[timeElapsed] = Classification.FRYING.name
 
-            # A lid on a pan doesn't seem to go over 100 degrees
-            elif panTemp - 50 <= average(foodTempList) < panTemp and panTemp < 100:
-                classifications[timeElapsed] = Classification.BRAISING.name
-
             # Boiling water doesn't seem to go over 140 degrees
-            elif panTemp - 50 <= average(foodTempList) < panTemp and panTemp < 140:
+            elif panTemp - 50 <= average(foodTempList) < panTemp:
                 classifications[timeElapsed] = Classification.BOILING.name
 
             else:
                 classifications[timeElapsed] = Classification.UNKNOWN.name
 
-        # Store pan temp so we can detect if we are heating up or cooling down
+        # Store pan temp so we can detect if the pan is heating up or cooling down
         prevPanTemp = panTemp
 
     return classifications
