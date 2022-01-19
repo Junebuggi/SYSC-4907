@@ -7,7 +7,7 @@ from Models.frame_data import FrameData
 from thermalImageProcessing import processVideo
 from classifier import classifyStaticVideo
 
-DATABASE = 'Project/test.db'
+DATABASE = 'Project/thermal_cooking.db'
 
 def generate_database():
     ''' Creates a database based on the Test Data folder.
