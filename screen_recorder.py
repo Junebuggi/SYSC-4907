@@ -44,9 +44,7 @@ cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
 # Resize this window
 cv2.resizeWindow('Live', 480, 270)
 
-# Record number of frames and duration to calculate true FPS
-numFrames = 0
-startTime = time.time()
+# Count number of frames that passed since previous write to video
 counter = 0
 
 with mss() as sct:
@@ -69,19 +67,11 @@ with mss() as sct:
         if counter >= counterLimit:
             counter = 0
             out.write(frame)
-            numFrames += 1
 
             # Display the recording screen
             cv2.imshow('Live', frame)
 
         if (cv2.waitKey(1) & 0xFF) == ord('q'):
-
-            # Print capture duration and true FPS
-            endTime = time.time()
-            duration = endTime - startTime
-            trueFps = np.ceil(numFrames / duration)
-            print('Duration: {}'.format(duration))
-            print('True FPS: {}'.format(trueFps))
 
             # Release the Video writer
             out.release()
