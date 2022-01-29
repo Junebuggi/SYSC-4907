@@ -48,7 +48,8 @@ def create_videos_table():
                             type TEXT,
                             subtype TEXT,
                             filename TEXT,
-                            analysis_table_name TEXT
+                            analysis_table_name TEXT,
+                            stoveId INTEGER
                         )''')
         c.close()
     conn.close()
@@ -61,7 +62,7 @@ def insert_video(video):
     with conn:
         c = conn.cursor()
         try:
-            c.execute('INSERT INTO videos VALUES (null, ?, ?, ?, ?)', video.get_as_record())
+            c.execute('INSERT INTO videos VALUES (null, ?, ?, ?, ?, ?)', video.get_as_record())
             print('Successfully inserted video {}'.format(video.filename))
         except AttributeError:
             print('Video to be inserted is not of type Video: {}'.format(type(video)))
@@ -102,6 +103,15 @@ def get_videos_by_subtype(subtype):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('SELECT * FROM videos WHERE subtype=?', (subtype,))
+    videos = c.fetchall()
+    c.close()
+    conn.close()
+    return videos
+
+def get_videos_by_stoveId(subtype):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('SELECT * FROM videos WHERE stoveId=?', (subtype,))
     videos = c.fetchall()
     c.close()
     conn.close()
@@ -211,6 +221,9 @@ def add_video_from_filename(filename):
     # Create an analysis table whose name is based on the subtype
     analysisTableName = create_analysis_table(subtype)
 
+    # Set stove ID to 1 since we only have one stove
+    stoveId = 1
+
     # Add frame data to the analysis table
     frameData = processVideo(filename, 10)
     frameDataObjs = []
@@ -220,7 +233,7 @@ def add_video_from_filename(filename):
     insert_many_frame_data(frameDataObjs, analysisTableName)
 
     # Add a record to the videos master table
-    video = Video(type, subtype, filename, analysisTableName)
+    video = Video(type, subtype, filename, analysisTableName, stoveId)
     insert_video(video)
 
 # Example
