@@ -10,12 +10,18 @@ from classifier import classifyStaticVideo
 DATABASE = 'Project/thermal_cooking.db'
 
 def generate_database():
-    ''' Creates a database based on the Test Data folder.
-    Deletes the database if it already exists.
+    ''' Create a database based on the Test Data folder.
+    Delete the database if it already exists.
     For each thermal video in the Test Data folder:
-        1. Creates an analysis table.
-        2. Adds records (FrameData) to the analysis table for each sampled frame.
-        3. Adds a record (Video) to the videos master table.
+        1. Create an analysis table.
+        2. Add records (FrameData) to the analysis table for each sampled frame.
+        3. Add a record (Video) to the videos master table.
+    
+    Args:
+        None
+    
+    Returns:
+        None
     '''
     # Delete database if it already exists
     if os.path.exists(DATABASE):
@@ -36,7 +42,20 @@ def generate_database():
     for filename in filenames:
         add_video_from_filename(filename)
 
+
+
 def create_videos_table():
+    ''' Create the master videos table.
+    The master videos table stores high-level information about thermal videos.
+    This inlcudes the style of cooking (e.g., frying), the food being cooked (e.g., chicken), the
+    filepath of the thermal video, the corresponding analysis table, and the registered stove ID.
+    
+    Args:
+        None
+    
+    Returns:
+        None
+    '''
     conn = sqlite3.connect(DATABASE)
     with conn:
         c = conn.cursor()
@@ -54,7 +73,17 @@ def create_videos_table():
         c.close()
     conn.close()
 
+
+
 def insert_video(video):
+    ''' Insert a video into the master videos table.
+    
+    Args:
+        video (Video): The video to insert
+    
+    Returns:
+        None
+    '''
     # Create videos table if it does not already exist
     create_videos_table()
 
@@ -72,7 +101,17 @@ def insert_video(video):
             c.close()
     conn.close()
 
+
+
 def get_all_videos():
+    ''' Get all the videos from the master videos table.
+    
+    Args:
+        None
+    
+    Returns:
+        list: All videos in the master videos table
+    '''
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('SELECT * FROM videos')
@@ -81,7 +120,17 @@ def get_all_videos():
     conn.close()
     return videos
 
+
+
 def get_video_by_id(id):
+    ''' Get a video by its ID from the master videos table.
+    
+    Args:
+        id (int): The ID to search for
+    
+    Returns:
+        Video: The video with the ID provided
+    '''
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('SELECT * FROM videos WHERE id=?', (id,))
@@ -90,7 +139,18 @@ def get_video_by_id(id):
     conn.close()
     return video
 
+
+
 def get_videos_by_type(type):
+    ''' Get all the videos from the master videos table with the
+    type provided (e.g., frying).
+    
+    Args:
+        type (str): The type to search for
+    
+    Returns:
+        list: All videos in the master videos table with the type
+    '''
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('SELECT * FROM videos WHERE type=?', (type,))
@@ -99,7 +159,18 @@ def get_videos_by_type(type):
     conn.close()
     return videos
 
+
+
 def get_videos_by_subtype(subtype):
+    ''' Get all the videos from the master videos table with the
+    subtype provided (e.g., chicken).
+    
+    Args:
+        subtype (str): The subtype to search for
+    
+    Returns:
+        list: All videos in the master videos table with the subtype
+    '''
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('SELECT * FROM videos WHERE subtype=?', (subtype,))
@@ -108,23 +179,42 @@ def get_videos_by_subtype(subtype):
     conn.close()
     return videos
 
-def get_videos_by_stoveId(subtype):
+
+
+def get_videos_by_stoveId(stoveId):
+    ''' Get all the videos from the master videos table with the
+    registered stove ID.
+    
+    Args:
+        stoveId (str): The stove ID to search for
+    
+    Returns:
+        list: All videos in the master videos table with the stove ID
+    '''
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute('SELECT * FROM videos WHERE stoveId=?', (subtype,))
+    c.execute('SELECT * FROM videos WHERE stoveId=?', (stoveId,))
     videos = c.fetchall()
     c.close()
     conn.close()
     return videos
 
+
+
 def create_analysis_table(name):
-    ''' Returns the modified name of the analysis table created for a given name.
+    ''' Return the modified name of the analysis table created for a given name.
     Appends a unique, incrementing index to the end of the analysis table name.
 
     Example:
         chicken => Chicken_Analysis_Table_1
         Chicken => Chicken_Analysis_Table_2
         ground beef => Ground_Beef_Analysis_Table_1
+
+    Arg:
+        name (str): The original name of the analysis table
+    
+    Returns:
+        string: The modified name of the analysis table
     '''
     # Replace spaces with underscores
     name = name.title().replace(' ', '_')
@@ -159,7 +249,18 @@ def create_analysis_table(name):
     print('{} created'.format(name))
     return name
 
+
+
 def insert_one_frame_data(frameData, analysisTableName):
+    ''' Insert a FrameData record into an analysis table.
+    
+    Args:
+        frameData (FrameData): The FrameData to insert
+        analysisTableName (str): The name of the analysis table to insert to
+    
+    Returns:
+        None
+    '''
     conn = sqlite3.connect(DATABASE)
     with conn:
         c = conn.cursor()
@@ -176,7 +277,18 @@ def insert_one_frame_data(frameData, analysisTableName):
             c.close()
     conn.close()
 
+
+
 def insert_many_frame_data(frameDataList, analysisTableName):
+    ''' Insert multiple FrameData records into an analysis table.
+    
+    Args:
+        frameData (FrameData): The FrameData to insert
+        analysisTableName (str): The name of the analysis table to insert to
+    
+    Returns:
+        None
+    '''
     conn = sqlite3.connect(DATABASE)
     with conn:
         c = conn.cursor()
@@ -193,7 +305,17 @@ def insert_many_frame_data(frameDataList, analysisTableName):
             c.close()
     conn.close()
 
+
+
 def get_all_frame_data(analysisTableName):
+    ''' Get all FrameData records from an analysis table.
+    
+    Args:
+        analysisTableName (str): The analysis table containing the FrameData
+    
+    Returns:
+        list: All FrameData in an analysis table
+    '''
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('SELECT * FROM {}'.format(analysisTableName))
@@ -202,9 +324,19 @@ def get_all_frame_data(analysisTableName):
     conn.close()
     return frameData
 
+
+
 def add_video_from_filename(filename):
-    ''' Adds the analytical data of a video to the database.
+    ''' Analyzes a video given its filename and stores its analytical data
+    (FrameData records) into the database.
+
     The provided filename must contain the 'Test Data' folder as part of its path.
+
+    Args:
+        filename (str): The filename of the video to analyze and store
+
+    Returns:
+        None
     '''
     # Replace '\\' with '/' to handle incoming filenames
     filename = filename.replace('\\', '/')
@@ -235,6 +367,8 @@ def add_video_from_filename(filename):
     # Add a record to the videos master table
     video = Video(type, subtype, filename, analysisTableName, stoveId)
     insert_video(video)
+
+
 
 # Example
 if __name__ == '__main__':

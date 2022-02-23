@@ -5,5 +5,4 @@ class Classification(Enum):
     HEATING_UP = 2
     FRYING = 3
     BOILING = 4
-    BRAISING = 5
-    UNKNOWN = 6
+    UNKNOWN = 5
