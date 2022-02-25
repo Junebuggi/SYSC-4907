@@ -242,7 +242,8 @@ def create_analysis_table(name):
                         pan_area INTEGER,
                         num_food INTEGER,
                         food_temp TEXT,
-                        food_area TEXT
+                        food_area TEXT,
+                        classification TEXT
                     )'''.format(name))
         c.close()
     conn.close()
@@ -266,7 +267,7 @@ def insert_one_frame_data(frameData, analysisTableName):
         c = conn.cursor()
         try:
             # Must use string formatting since sqlite3 doesn't support variable table names
-            c.execute('INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?)'.format(analysisTableName),
+            c.execute('INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?, ?)'.format(analysisTableName),
                        frameData.get_as_record())
         except AttributeError:
             print('Frame data to be inserted is not of type FrameData: {}'.format(type(frameData)))
@@ -294,7 +295,7 @@ def insert_many_frame_data(frameDataList, analysisTableName):
         c = conn.cursor()
         try:
             # Must use string formatting since sqlite3 doesn't support variable table names
-            c.executemany('INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?)'.format(analysisTableName),
+            c.executemany('INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?, ?)'.format(analysisTableName),
                        [frameData.get_as_record() for frameData in frameDataList])
         except AttributeError:
             print('Frame data to be inserted is not a list of FrameData: {}'.format(type(frameDataList)))
@@ -356,11 +357,18 @@ def add_video_from_filename(filename):
     # Set stove ID to 1 since we only have one stove
     stoveId = 1
 
-    # Add frame data to the analysis table
+    # Get frame data from video
     frameData = processVideo(filename, 10)
+
+    # Classify frame data at each elapsed time interval
+    classifications = classifyStaticVideo(frameData)
+
+    # Add frame data to the analysis table
     frameDataObjs = []
     for (timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea) in frameData:
-        frameDataObjs.append(FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea))
+        classification = classifications[timeElapsed]
+        newFrameData = FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea, classification)
+        frameDataObjs.append(newFrameData)
 
     insert_many_frame_data(frameDataObjs, analysisTableName)
 
@@ -372,7 +380,7 @@ def add_video_from_filename(filename):
 
 # Example
 if __name__ == '__main__':
-    frameData = get_all_frame_data('Burger_Analysis_Table_2')
+    frameData = get_all_frame_data('Three_Mushrooms_Analysis_Table_1')
     result = classifyStaticVideo(frameData)
     print(result)
 

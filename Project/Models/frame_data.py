@@ -1,3 +1,6 @@
+from msilib.schema import Class
+from classification import Classification
+
 class FrameData:
     ''' An instance of FrameData represents a frame that is sampled from a thermal video.
     FrameData records are stored in an analysis table pertaining to the specific thermal video file.
@@ -9,14 +12,16 @@ class FrameData:
         numFood (INTEGER) - The number of food elements
         foodTemp (TEXT) - The string representation of an array containing temperatures (in Celsius) of each identified food
         foodArea (TEXT) - The string representation of an array containing the areas (in pixels) of each identified food
+        classification (TEXT) - The classification of the frame specified by the classifier
     '''
-    def __init__(self, timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea):
+    def __init__(self, timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea, classification):
         self._timeElapsed = timeElapsed
         self._panTemp = panTemp
         self._panArea = panArea
         self._numFood = numFood
         self._foodTemp = foodTemp
         self._foodArea = foodArea
+        self._classification = classification
 
     @property
     def timeElapsed(self):
@@ -42,5 +47,9 @@ class FrameData:
     def foodArea(self):
         return self._foodArea
 
+    @property
+    def classification(self):
+        return self._classification
+
     def get_as_record(self):
-        return (self.timeElapsed, self.panTemp, self.panArea, self.numFood, self.foodTemp, self.foodArea)
+        return (self.timeElapsed, self.panTemp, self.panArea, self.numFood, self.foodTemp, self.foodArea, self.classification)

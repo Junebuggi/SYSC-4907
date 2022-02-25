@@ -7,7 +7,7 @@ def classifyStaticVideo(frameData):
     prevPanTemp = None
 
     for frame in frameData:
-        timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea = frame
+        timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea, classification = frame
 
         # Open element or empty pan
         if numFood == 0:
