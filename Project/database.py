@@ -383,7 +383,3 @@ if __name__ == '__main__':
     frameData = get_all_frame_data('Three_Mushrooms_Analysis_Table_1')
     result = classifyStaticVideo(frameData)
     print(result)
-
-    # generate_database()
-    # for video in get_all_videos():
-    #     print(video)
