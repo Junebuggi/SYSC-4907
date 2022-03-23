@@ -4,9 +4,6 @@ from fnmatch import fnmatch
 from sqlite3 import IntegrityError
 from Models.video import Video
 from Models.frame_data import FrameData
-import sys
-sys.path.append("..")
-
 from ThermSAS import thermalImageProcessing
 
 def generate_database():

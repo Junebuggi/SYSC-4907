@@ -361,12 +361,12 @@ def add_video_from_filename(filename):
     frameData = processVideo(filename, 10)
 
     # Classify frame data at each elapsed time interval
-    classifications = classifyStaticVideo(frameData)
+    classifications = "NA"#classifyStaticVideo(frameData)
 
     # Add frame data to the analysis table
     frameDataObjs = []
     for (timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea) in frameData:
-        classification = classifications[timeElapsed]
+        classification = "NA"#classifications[timeElapsed]
         newFrameData = FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea, classification)
         frameDataObjs.append(newFrameData)
 
@@ -375,7 +375,6 @@ def add_video_from_filename(filename):
     # Add a record to the videos master table
     video = Video(type, subtype, filename, analysisTableName, stoveId)
     insert_video(video)
-
 
 
 # Example

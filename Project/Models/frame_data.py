@@ -1,4 +1,4 @@
-from msilib.schema import Class
+#from msilib.schema import Class
 from classification import Classification
 
 class FrameData:
