@@ -8,13 +8,15 @@ class Video:
         subtype (TEXT) - The type of food being cooked (e.g., Chicken)
         filename (TEXT) - The filename of the video
         analysisTableName (TEXT) - The name of the analysis table that contains the FrameData of the video
+        classification (TEXT) - The classification of the video
         stoveId (INTEGER) - The ID of the stove used in the thermal video
     '''
-    def __init__(self, type, subtype, filename, analysisTableName, stoveId):
+    def __init__(self, type, subtype, filename, analysisTableName, classification, stoveId):
         self._type = type
         self._subtype = subtype
         self._filename = filename
         self._analysisTableName = analysisTableName
+        self._classification = classification
         self._stoveId = stoveId
 
     @property
@@ -34,8 +36,12 @@ class Video:
         return self._analysisTableName
 
     @property
+    def classification(self):
+        return self._classification
+
+    @property
     def stoveId(self):
         return self._stoveId
 
     def get_as_record(self):
-        return (self.type, self.subtype, self.filename, self.analysisTableName, self.stoveId)
+        return (self.type, self.subtype, self.filename, self.analysisTableName, self.classification, self.stoveId)

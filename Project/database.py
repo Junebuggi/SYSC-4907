@@ -68,6 +68,7 @@ def create_videos_table():
                             subtype TEXT,
                             filename TEXT,
                             analysis_table_name TEXT,
+                            classification TEXT,
                             stoveId INTEGER
                         )''')
         c.close()
@@ -91,7 +92,7 @@ def insert_video(video):
     with conn:
         c = conn.cursor()
         try:
-            c.execute('INSERT INTO videos VALUES (null, ?, ?, ?, ?, ?)', video.get_as_record())
+            c.execute('INSERT INTO videos VALUES (null, ?, ?, ?, ?, ?, ?)', video.get_as_record())
             print('Successfully inserted video {}'.format(video.filename))
         except AttributeError:
             print('Video to be inserted is not of type Video: {}'.format(type(video)))
@@ -361,7 +362,7 @@ def add_video_from_filename(filename):
     frameData = processVideo(filename, 10)
 
     # Classify frame data at each elapsed time interval
-    classifications = "NA"#classifyStaticVideo(frameData)
+    classification = "NA"#classifyStaticVideo(frameData)
 
     # Add frame data to the analysis table
     frameDataObjs = []
@@ -373,7 +374,7 @@ def add_video_from_filename(filename):
     insert_many_frame_data(frameDataObjs, analysisTableName)
 
     # Add a record to the videos master table
-    video = Video(type, subtype, filename, analysisTableName, stoveId)
+    video = Video(type, subtype, filename, analysisTableName, classification, stoveId)
     insert_video(video)
 
 
