@@ -47,8 +47,8 @@ def classification(x, y, yPan, order = 1):
         
             #Now check for spikes
         peaks, _ = find_peaks(np.gradient(np.gradient(y)))
-        plt.plot(x,np.gradient(np.gradient(y)) )
-        plt.show()
+        #plt.plot(x,y)
+        #plt.show()
         if (len(peaks) >= 1):
             rho = np.corrcoef(x,y)
 

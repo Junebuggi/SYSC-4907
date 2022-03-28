@@ -174,64 +174,74 @@ def thermalImagingProcess(frames):
     #background = resizeImage(frames[0], 25)
     prevIsBG = True
     entries = []
+    startTime = time.time()
     i=0
     for frame in frames:
         foreground = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
 
-        frame = resizeImage(frame, 50)
-        #If over 85% of the image has same colour, then it is considered 
-        if False: #prevIsBG and getPercentageOfMode(foreground) >= 0.99:
-            continue
-        else:
-            prevIsBG = False
-            
+        forground = resizeImage(frame, 50)
 
-            #Convert to grayscale and blur
-            blur= cv2.medianBlur(np.copy(foreground),5)
-            thresh_gray = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 127, 1)
-            open_morph = open_Morph(thresh_gray)
-            ellipse = cv2.cvtColor(findPan(foreground, open_morph), cv2.COLOR_BGR2GRAY)
-            ellipseMask = cv2.bitwise_and(foreground, ellipse)
-            if len(np.column_stack(np.where(ellipse != 0))) == 0:
-                backgroundTemp = getAverageImageTemperature(foreground)
-            else:
-                #showImage(cv2.cvtColor(ellipseMask, cv2.COLOR_BGR2RGB), "Ellipse")
-                pnts = list(set(contourMask(ellipse)))
-                panTemp = getAverageTemperature_pnts(pnts, foreground)
-                if backgroundTemp - panTemp > - 10:
-                    backgroundTemp = getAverageImageTemperature(foreground)
+        #Convert to grayscale and blur
+        print("Frame: "+str(i)+" - Blurring Image. ElapsedTime: " + str(time.time() - startTime))
+        blur= cv2.medianBlur(np.copy(foreground),5)
+        print("Frame: "+str(i)+" - Thresholding Image. ElapsedTime: " + str(time.time() - startTime))
+        thresh_gray = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 127, 1)
+        print("Frame: "+str(i)+" - Morphing Image. ElapsedTime: " + str(time.time() - startTime))
+        open_morph = open_Morph(thresh_gray)
+        print("Frame: "+str(i)+" - FindPan. ElapsedTime: " + str(time.time() - startTime))
+        ellipse = cv2.cvtColor(findPan(foreground, open_morph), cv2.COLOR_BGR2GRAY)
+        print("Frame: "+str(i)+" - BitwiseMask Image. ElapsedTime: " + str(time.time() - startTime))
+        ellipseMask = cv2.bitwise_and(foreground, ellipse)
+        print("Frame: "+str(i)+" - Column Stack Image. ElapsedTime: " + str(time.time() - startTime))
+        if not len(np.column_stack(np.where(ellipse != 0))) == 0:
+            #showImage(cv2.cvtColor(ellipseMask, cv2.COLOR_BGR2RGB), "Ellipse")
+            print("Frame: "+str(i)+" - ContourMask. ElapsedTime: " + str(time.time() - startTime))
+            pnts = list(set(contourMask(ellipse)))
+            print("Frame: "+str(i)+" - Get PanTemp Image. ElapsedTime: " + str(time.time() - startTime))
+            panTemp = getAverageTemperature_pnts(pnts, foreground)
+            print("Frame: "+str(i)+" - After PanTemp Image. ElapsedTime: " + str(time.time() - startTime))
+            if not (backgroundTemp - panTemp > - 10):
+                blurPan = cv2.medianBlur(np.copy(ellipseMask),5)
+                thresh_insidePan = cv2.adaptiveThreshold(blurPan, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 127, 1)
+                thresh_insidePan = np.where(ellipse == 0, 0, thresh_insidePan)
+                open_morphPan = open_Morph(thresh_insidePan)
+                insidePan, contours = getContoursInsidePan(open_morphPan, foreground)
+                #showImage(insidePan, "Contours detected inside pan at " + str(i*10) + " seconds", True)
+                #getTemperatureHist_pnts(ellipseMask, pnts)
+                print("Frame: "+str(i)+" - Get Contour Heat. ElapsedTime: " + str(time.time() - startTime))
+                pts, temperatureList = getContourHeat(contours, thresh_insidePan, foreground)
+                print("Frame: "+str(i)+" - After Contour Heat. ElapsedTime: " + str(time.time() - startTime))
+                if temperatureList is not None and all(x is None for x in temperatureList):
+                    for tempL in temperatureList[1:len(temperatureList)-1]:
+                        for x in tempL:
+                            try:
+                                temperatureList[0].remove(x)
+                            except ValueError:
+                                pass
+
+
+                    # temperatureList.sort(key=len, reverse=True)
+                    # if len(temperatureList) > 1:
+                        
+                    #     for e in temperatureList[1]:
+                    #         if e in temperatureList[0]:
+                    #             temperatureList[0].remove(e)
+                print("Frame: "+str(i)+" - After Temperature List. ElapsedTime: " + str(time.time() - startTime))    
+                pts = list(filter(lambda x: x[1] > 50, pts))
+                pan = max(pts,key=lambda item:item[1])
+                    
+                if(len(pts) > 1):
+                    food = pts.copy()
+                    food.remove(pan)
+                    #Now remove food from pan pixels and average temp
+                    for f in food:
+                        panAvg = (pan[0]*pan[1]-f[0]*f[1])/(pan[1]-f[1])
+                        pan = (panAvg, pan[1] - f[1])
+                    foodTemp = [x[0] for x in food]
+                    foodSize = [x[1] for x in food]
+                    entries.append((i*10, pan[0], pan[1], len(food), str(foodTemp),str(foodSize)))
                 else:
-                    blurPan = cv2.medianBlur(np.copy(ellipseMask),5)
-                    thresh_insidePan = cv2.adaptiveThreshold(blurPan, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 127, 1)
-                    thresh_insidePan = np.where(ellipse == 0, 0, thresh_insidePan)
-                    open_morphPan = open_Morph(thresh_insidePan)
-                    insidePan, contours = getContoursInsidePan(open_morphPan, foreground)
-                    #showImage(insidePan, "Contours detected inside pan at " + str(i*10) + " seconds", True)
-                    #getTemperatureHist_pnts(ellipseMask, pnts)
-                    pts, temperatureList = getContourHeat(contours, thresh_insidePan, foreground)
-                    if temperatureList is not None:
-                        temperatureList.sort(key=len, reverse=True)
-                        if len(temperatureList) > 1:
-                            
-                            for e in temperatureList[1]:
-                                if e in temperatureList[0]:
-                                    temperatureList[0].remove(e)
-                        
-                    pts = list(filter(lambda x: x[1] > 50, pts))
-                    pan = max(pts,key=lambda item:item[1])
-                        
-                    if(len(pts) > 1):
-                        food = pts.copy()
-                        food.remove(pan)
-                        #Now remove food from pan pixels and average temp
-                        for f in food:
-                            panAvg = (pan[0]*pan[1]-f[0]*f[1])/(pan[1]-f[1])
-                            pan = (panAvg, pan[1] - f[1])
-                        foodTemp = [x[0] for x in food]
-                        foodSize = [x[1] for x in food]
-                        entries.append((i*10, pan[0], pan[1], len(food), str(foodTemp),str(foodSize)))
-                    else:
-                        entries.append((i*10, pan[0], pan[1], len(food), "", ""))
+                    entries.append((i*10, pan[0], pan[1], 0, "", ""))
         i += 1
     return entries
 
