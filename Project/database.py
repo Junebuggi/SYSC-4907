@@ -6,6 +6,7 @@ from Models.video import Video
 from Models.frame_data import FrameData
 from thermalImageProcessing import processVideo
 from classifier import classifyStaticVideo
+from classificationAnalyzer import classifyTable
 
 DATABASE = 'Project/thermal_cooking.db'
 
@@ -362,19 +363,20 @@ def add_video_from_filename(filename):
     frameData = processVideo(filename, 10)
 
     # Classify frame data at each elapsed time interval
-    classification = "NA"#classifyStaticVideo(frameData)
+    frameByFrameClassifications = classifyStaticVideo(frameData)
 
     # Add frame data to the analysis table
     frameDataObjs = []
     for (timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea) in frameData:
-        classification = "NA"#classifications[timeElapsed]
-        newFrameData = FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea, classification)
+        frameByFrameClassification = frameByFrameClassifications[timeElapsed]
+        newFrameData = FrameData(timeElapsed, panTemp, panArea, numFood, foodTemp, foodArea, frameByFrameClassification)
         frameDataObjs.append(newFrameData)
 
     insert_many_frame_data(frameDataObjs, analysisTableName)
 
     # Add a record to the videos master table
-    video = Video(type, subtype, filename, analysisTableName, classification, stoveId)
+    overallClassification = classifyTable(analysisTableName)
+    video = Video(type, subtype, filename, analysisTableName, overallClassification, stoveId)
     insert_video(video)
 
 
