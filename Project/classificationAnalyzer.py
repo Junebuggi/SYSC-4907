@@ -1,11 +1,6 @@
 import database as db
 import os
-from tkinter import Tk, Button, Frame, Label, StringVar, filedialog, DISABLED, NORMAL
-from database import add_video_from_filename
-from threading import Thread
-import tkinter as tk
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pandas import DataFrame
 import numpy as np
 from matplotlib import pyplot as plt
@@ -66,12 +61,12 @@ def classification(x, y, yPan, order = 1):
             if rho[0][1] > 0.9:
                 returnString += "Boiling\n"
                 classification = "Boiling"
-                return  returnString, xFinal, yFinal
+                return  returnString, xFinal, yFinal, classification
             else:
                 
                 returnString += "Frying\n"
                 classification = "Frying"
-                return  returnString, xFinal, yFinal
+                return  returnString, xFinal, yFinal, classification
 
         else:
             returnString += "Boiling\n"
