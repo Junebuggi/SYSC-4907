@@ -57,7 +57,7 @@ class classifierGUI:
 
     def handleClassifyVideo(self):
         df = CA.getTemperatureData(self.scenarios[self.v.get()][2])
-        string, x, y = CA.classification(df["Time"], df["Food"], df["Pan"])
+        string, x, y, classification = CA.classification(df["Time"], df["Food"], df["Pan"])
         self.clearToTextInput(self.text)
         self.text.insert(tk.INSERT, string)
         print("Clicked")

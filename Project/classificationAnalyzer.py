@@ -29,6 +29,7 @@ def getTemperatureData(Analysis_Table_Name):
     
 
 def classification(x, y, yPan, order = 1):
+    classification = ""
     xFinal = x.copy().values.tolist()
     yFinal = y.copy().values.tolist()
     yPanFinal = yPan.copy().values.tolist()
@@ -64,17 +65,20 @@ def classification(x, y, yPan, order = 1):
                 prevSlope = slope
             if rho[0][1] > 0.9:
                 returnString += "Boiling\n"
+                classification = "Boiling"
                 return  returnString, xFinal, yFinal
             else:
                 
                 returnString += "Frying\n"
+                classification = "Frying"
                 return  returnString, xFinal, yFinal
 
         else:
             returnString += "Boiling\n"
             returnString += "No peaks observed\n"
+            classification = "Boiling"
         
-        return  returnString, xFinal, yFinal
+        return  returnString, xFinal, yFinal, classification
     
         
             
@@ -84,15 +88,18 @@ def classification(x, y, yPan, order = 1):
         if(abs(slope) < 0.1):
             if(len(y) > 40):
                 returnString += "Send notification! Stove on too long!\n"
+                classification = "On Too Long"
             else:
+                classification = "Steady Temperature"
                 returnString += "Stove is at steady temperature and not unattended\n"
         else:
             returnString += "Stove is cooling down\n"
             curve_fit = np.polyfit(x, np.log(y), 1)
             roomTempTime = np.log(22/math.e**curve_fit[1])/curve_fit[0]
             returnString += "Time remaining until stove is room temperature (22 C) is " + str(int(roomTempTime - len(x)*10)) + " seconds\n"
-            return returnString, xFinal, yPanFinal
-    return  returnString, xFinal, yPanFinal
+            classification = "Cooling Down"
+            return returnString, xFinal, yPanFinal, classification
+    return  returnString, xFinal, yPanFinal, classification
     
 
 def peakPieceWiseDivide(x,y, peaks):
@@ -108,24 +115,34 @@ def peakPieceWiseDivide(x,y, peaks):
 
     return pieces
 
+"""
+Documentation: TO-DO
+Pass it the table name and it will return the classification as a string
+"""
+def classifyTable(tableName):
+    df = getTemperatureData(tableName)
+    str, x, y, classif = classification(df["Time"], df["Food"], df["Pan"])
+    return classif
+
 if __name__ == '__main__':
-    df = getTemperatureData("Cool_Down_Analysis_Table_1")
-    str, x, y = classification(df["Time"], df["Food"], df["Pan"])
-    print(str + "\n")
+    # df = getTemperatureData("Cool_Down_Analysis_Table_1")
+    # string, x, y, classification = classification(df["Time"], df["Food"], df["Pan"])
+    # #print(str + "\n")
 
-    df = getTemperatureData("Water_Analysis_Table_1")
-    str, x, y = classification(df["Time"], df["Food"], df["Pan"])
-    print(str + "\n")
+    # df = getTemperatureData("Water_Analysis_Table_1")
+    # string, x, y, classification = classification(df["Time"], df["Food"], df["Pan"])
+    # #print(str + "\n")
 
 
-    df = getTemperatureData("Egg_Analysis_Table_1")
-    str, x, y = classification(df["Time"], df["Food"], df["Pan"])
-    print(str + "\n")
+    # df = getTemperatureData("Egg_Analysis_Table_1")
+    # string, x, y, classification = classification(df["Time"], df["Food"], df["Pan"])
+    # #print(str + "\n")
 
-    df = getTemperatureData("Safety_Test_Analysis_Table_1")
-    str, x, y = classification(df["Time"], df["Food"], df["Pan"])
-    print(str + "\n")
+    # df = getTemperatureData("Safety_Test_Analysis_Table_1")
+    # string, x, y, classification = classification(df["Time"], df["Food"], df["Pan"])
+    # #print(str + "\n")
+    print(classifyTable("Safety_Test_Analysis_Table_1"))
 
     df = getTemperatureData("Safety_Test_Analysis_Table_2")
-    str, x, y = classification(df["Time"], df["Food"], df["Pan"])
-    print(str + "\n")
+    string, x, y, classification = classification(df["Time"], df["Food"], df["Pan"])
+    #print(str + "\n")
